@@ -23,7 +23,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                         create_user(user)
                     except ConnectionRefusedError:
                         user.sendall("\n\t Cos poszlo nie tak :( ".encode('utf-8'))
-                        print("USER DISCONNECTED!")
+                        print("\n\t USER DISCONNECTED!")
                 elif data == '2':
                     try:
                         change_balance(user)

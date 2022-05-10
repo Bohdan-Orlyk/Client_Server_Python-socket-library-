@@ -32,7 +32,7 @@ try:
                 # SENDING DATA ABOUT USER TO SERVER
                 user = {"Name": name, "Surname": surname, "PESEL": pesel, "Balance": 0}
                 sent_data = json.dumps(user)
-                client.sendall(data_to_changing.encode('utf-8'))
+                client.sendall(sent_data.encode('utf-8'))
 
                 # GETTING REQUEST ABOUT CREATING USER
                 request_from_server = client.recv(1024)
