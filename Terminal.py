@@ -24,7 +24,7 @@ def request_to_server(client, message_to_server):
 
 
 def create_user(user):
-    # SERVER REQUEST TO CREATE A USER
+    # SERVER REQUEST TO SHOW INFORMATION ABOUT OPERATION
     request_to_client(user, "Tworzenie uzytkownika: ")
 
     # GETTING DATA FROM USER AND SAVING IN .json FORMAT
@@ -41,7 +41,7 @@ def create_user(user):
 
 
 def change_balance(user):
-    # SERVER REQUEST TO CREATE A USER
+    # SERVER REQUEST TO SHOW INFORMATION ABOUT OPERATION
     request_to_client(user, "Zmiana salda dla uzytkownika: ")
 
     # GETTING DATA FROM USER AND SAVING IN .json FORMAT
@@ -66,12 +66,12 @@ def change_balance(user):
             json.dump(data, file_to_changing)
 
         # SENDING STATUS OF OPERATION
-        message_to_client = f"Kwota po operacji wynosi: {data['Balance']} PLN"
+        message_to_client = f"Kwota po operacji wynosi: {data['Balance']:.2f} PLN"
         request_to_client(user, message_to_client)
 
 
 def show_information(user):
-    # SERVER REQUEST TO SHOW INFORMATION ABOUT USER
+    # SERVER REQUEST TO SHOW INFORMATION ABOUT OPERATION
     request_to_client(user, "Informacja o koncie: ")
 
     # GETTING DATA FROM USER AND SAVING IN .json FORMAT
@@ -88,5 +88,39 @@ def show_information(user):
     # SENDING STATUS OF OPERATION
     message_to_client = f"Uzytkownik: {data['Name']} {data['Surname']}. " \
                         f"Numer konta: {data['ID']}. " \
-                        f"Saldo: {data['Balance']} PLN"
+                        f"Saldo: {data['Balance']:.2f} PLN"
     request_to_client(user, message_to_client)
+
+
+def get_money(user):
+    # SERVER REQUEST TO SHOW INFORMATION ABOUT OPERATION
+    request_to_client(user, "Wyplata srodkow: ")
+
+    # GETTING DATA FROM USER AND SAVING IN .json FORMAT
+    user_info_json = get_from_client(user)
+    print("USER DATA:", user_info_json)
+
+    # GETTING MONEY FROM USER`s BALANCE
+    name = user_info_json["Name"]
+    surname = user_info_json["Surname"]
+    balance_to_get = user_info_json["BalanceToGet"]
+
+    with open(f'Users/{name}_{surname}.json', 'r') as file_to_changing:
+        data = json.load(file_to_changing)
+
+    balance = data["Balance"]
+
+    if float(balance) < float(balance_to_get):
+        request_to_client(user, "Nie wystarcza srodkow na koncie!")
+    elif float(balance_to_get) <= 0:
+        request_to_client(user, "Kwota nie moze byc mniejsza od zera albo rownac sie zero!")
+
+    else:
+        data["Balance"] -= float(balance_to_get)
+
+        with open(f'Users/{name}_{surname}.json', 'w') as file_to_changing:
+            json.dump(data, file_to_changing)
+
+        # SENDING STATUS OF OPERATION
+        message_to_client = f"Kwota po operacji wynosi: {data['Balance']:.2f} PLN"
+        request_to_client(user, message_to_client)

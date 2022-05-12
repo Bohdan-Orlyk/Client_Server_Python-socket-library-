@@ -19,10 +19,10 @@ try:
                            "Wyjsc - q: ")
 
             if option == '1':
-                # SENDING OPTION OF CREATING A USER
+                # SENDING OPTION TO SERVER
                 request_to_server(client, '1')
 
-                # GETTING REQUEST FROM SERVER ABOUT OPTION
+                # GETTING REQUEST FROM SERVER
                 server_message = get_from_server(client)
                 print(server_message)
 
@@ -42,10 +42,10 @@ try:
                 print(server_message)
 
             elif option == '2':
-                # SENDING OPTION OF ADDING MONEY
+                # SENDING OPTION TO SERVER
                 request_to_server(client, '2')
 
-                # GETTING REQUEST FROM SERVER ABOUT OPTION
+                # GETTING REQUEST FROM SERVER
                 server_message = get_from_server(client)
                 print(server_message)
 
@@ -65,9 +65,10 @@ try:
                 print(server_message)
 
             elif option == '3':
+                # SENDING OPTION TO SERVER
                 request_to_server(client, '3')
 
-                # GETTING REQUEST FROM SERVER ABOUT OPTION
+                # GETTING REQUEST FROM SERVER
                 server_message = get_from_server(client)
                 print(server_message)
 
@@ -78,6 +79,29 @@ try:
                 user = {"Name": name, "Surname": surname}
                 data_to_find = json.dumps(user)
                 request_to_server(client, data_to_find)
+
+                # MESSAGE FROM SERVER ABOUT STATUS OF OPERATION
+                server_message = get_from_server(client)
+                print(server_message)
+
+            elif option == '4':
+                # SENDING OPTION TO SERVER
+                request_to_server(client, '4')
+
+                # GETTING REQUEST FROM SERVER
+                server_message = get_from_server(client)
+                print(server_message)
+
+                # FIND .json DATA BY USER`s Name AND Surname
+                name = input("Podaj imie: ")
+                surname = input("Podaj nazwisko: ")
+                balance_to_get = input("Kwota do wyplaty: ")
+
+                # SEND DATA TO SERVER
+                user = {"Name": name, "Surname": surname, "BalanceToGet": balance_to_get}
+
+                data_to_changing = json.dumps(user)
+                request_to_server(client, data_to_changing)
 
                 # MESSAGE FROM SERVER ABOUT STATUS OF OPERATION
                 server_message = get_from_server(client)

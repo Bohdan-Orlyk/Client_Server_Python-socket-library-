@@ -18,17 +18,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
             print(f"Connected by {address}")
 
             while True:
-                data = user.recv(1024).decode('utf-8')
-                print("Option:", data)
+                option = user.recv(1024).decode('utf-8')
+                print("Option:", option)
 
-                if data == '1':
+                if option == '1':
                     try:
                         create_user(user)
                     except ConnectionRefusedError:
                         request_to_client(user, "Cos poszlo nie tak :( ")
                         print("ERROR!")
 
-                elif data == '2':
+                elif option == '2':
                     try:
                         change_balance(user)
                     except ConnectionRefusedError:
@@ -43,7 +43,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                         request_to_client(user, "Nieprawidlowo podane dane!")
                         print("ERROR!")
 
-                elif data == '3':
+                elif option == '3':
                     try:
                         show_information(user)
                     except ConnectionRefusedError:
@@ -54,6 +54,21 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                         request_to_client(user, "Nieprawidlowo podane dane!")
                         print("ERROR!")
 
-                if not data:
+                elif option == '4':
+                    try:
+                        get_money(user)
+                    except ConnectionRefusedError:
+                        request_to_client(user, "Cos poszlo nie tak :( ")
+                        print("ERROR!")
+
+                    except FileNotFoundError:
+                        request_to_client(user, "Nieprawidlowo podane dane!")
+                        print("ERROR!")
+
+                    except ValueError:
+                        request_to_client(user, "Nieprawidlowo podane dane!")
+                        print("ERROR!")
+
+                if not option:
                     print('USER DISCONNECTED!')
                     break
