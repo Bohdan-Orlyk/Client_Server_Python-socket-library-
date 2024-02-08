@@ -1,118 +1,132 @@
 import socket
 import json
-from Terminal import get_from_server, request_to_server
+import Terminal as terminal
 
-host = "127.0.0.1"
-port = 65432
-run = True
 
-try:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        client.connect((host, port))
+class KilledSession(BaseException):
+    pass
 
-        while run:
-            option = input("Utworzyc klienta - 1, "
-                           "Dokonac wplaty - 2, "
-                           "Stan konta - 3, "
-                           "Wyplacic srodki - 4, "
-                           "Przelew na inne konto - 5, "
-                           "Wyjsc - q: ")
 
-            if option == '1':
-                # SENDING OPTION TO SERVER
-                request_to_server(client, '1')
+def server_message(func):
+    def wrapper(client, option):
+        terminal.request_to_server(client, option)
+        print(terminal.get_from_server(client))
 
-                # GETTING REQUEST FROM SERVER
-                server_message = get_from_server(client)
-                print(server_message)
+        func(client)
 
-                # CREATING A USER
-                name = input("Podaj imie: ")
-                surname = input("Podaj nazwisko: ")
-                pesel = input("Podaj PESEL: ")
-                user_id = 0
+        print(terminal.get_from_server(client))
 
-                # SENDING DATA ABOUT USER TO SERVER
-                user = {"Name": name, "Surname": surname, "ID": user_id, "PESEL": pesel, "Balance": 0}
-                sent_data = json.dumps(user)
-                request_to_server(client, sent_data)
+    return wrapper
 
-                # MESSAGE FROM SERVER ABOUT STATUS OF OPERATION
-                server_message = get_from_server(client)
-                print(server_message)
 
-            elif option == '2':
-                # SENDING OPTION TO SERVER
-                request_to_server(client, '2')
+class Client:
+    def __init__(self):
+        self.HOST = "127.0.0.1"
+        self.PORT = 65432
+        self.options = {
+            "1": self.create_client,
+            "2": self.add_cash,
+            "3": self.get_bank_status,
+            "4": self.get_cash,
+            "5": self.transfer_cash_to_another_account,
+            "q": self.stop_client,
+        }
 
-                # GETTING REQUEST FROM SERVER
-                server_message = get_from_server(client)
-                print(server_message)
+    def start_client(self):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+                client.connect((self.HOST, self.PORT))
 
-                # FIND .json DATA BY USER`s Name AND Surname
-                name = input("Podaj imie: ")
-                surname = input("Podaj nazwisko: ")
-                balance = input("Kwota: ")
+                while True:
+                    option = input("Utworzyc klienta - 1, "
+                                   "Dokonac wplaty - 2, "
+                                   "Stan konta - 3, "
+                                   "Wyplacic srodki - 4, "
+                                   "Przelew na inne konto - 5, "
+                                   "Wyjsc - q: ")
 
-                # SEND DATA TO SERVER
-                user = {"Name": name, "Surname": surname, "Balance": balance}
+                    if option:
+                        func = self.options.get(option, None)
 
-                data_to_changing = json.dumps(user)
-                request_to_server(client, data_to_changing)
+                        if func:
+                            func(client=client, option=option)
+                        else:
+                            print("Wybierz jedna z opcji!")
+        except KilledSession:
+            print("\t\n Do widzenia!")
+        except ConnectionRefusedError:
+            print("SERVER ISN`T RESPONDING")
 
-                # MESSAGE FROM SERVER ABOUT STATUS OF OPERATION
-                server_message = get_from_server(client)
-                print(server_message)
+    @staticmethod
+    @server_message
+    def create_client(client):
+        """CREATING A USER"""
 
-            elif option == '3':
-                # SENDING OPTION TO SERVER
-                request_to_server(client, '3')
+        name = input("Podaj imie: ")
+        surname = input("Podaj nazwisko: ")
+        pesel = input("Podaj PESEL: ")
+        user_id = 0
 
-                # GETTING REQUEST FROM SERVER
-                server_message = get_from_server(client)
-                print(server_message)
+        # SENDING DATA ABOUT USER TO SERVER
+        user = {"Name": name, "Surname": surname, "ID": user_id, "PESEL": pesel, "Balance": 0}
+        sent_data = json.dumps(user)
 
-                # FIND .json DATA BY USER`s Name AND Surname
-                name = input("Podaj imie: ")
-                surname = input("Podaj nazwisko: ")
+        terminal.request_to_server(client, sent_data)
 
-                user = {"Name": name, "Surname": surname}
-                data_to_find = json.dumps(user)
-                request_to_server(client, data_to_find)
+    @staticmethod
+    @server_message
+    def add_cash(client):
+        """ FIND .json DATA BY USER`s Name AND Surname """
 
-                # MESSAGE FROM SERVER ABOUT STATUS OF OPERATION
-                server_message = get_from_server(client)
-                print(server_message)
+        name = input("Podaj imie: ")
+        surname = input("Podaj nazwisko: ")
+        balance = input("Kwota: ")
+        # SEND DATA TO SERVER
+        user = {"Name": name, "Surname": surname, "Balance": balance}
+        data_to_changing = json.dumps(user)
 
-            elif option == '4':
-                # SENDING OPTION TO SERVER
-                request_to_server(client, '4')
+        terminal.request_to_server(client, data_to_changing)
 
-                # GETTING REQUEST FROM SERVER
-                server_message = get_from_server(client)
-                print(server_message)
+    @staticmethod
+    @server_message
+    def get_bank_status(client):
+        """FIND .json DATA BY USER`s Name AND Surname"""
 
-                # FIND .json DATA BY USER`s Name AND Surname
-                name = input("Podaj imie: ")
-                surname = input("Podaj nazwisko: ")
-                balance_to_get = input("Kwota do wyplaty: ")
+        name = input("Podaj imie: ")
+        surname = input("Podaj nazwisko: ")
+        user = {"Name": name, "Surname": surname}
+        data_to_find = json.dumps(user)
 
-                # SEND DATA TO SERVER
-                user = {"Name": name, "Surname": surname, "BalanceToGet": balance_to_get}
+        terminal.request_to_server(client, data_to_find)
 
-                data_to_changing = json.dumps(user)
-                request_to_server(client, data_to_changing)
+    @staticmethod
+    @server_message
+    def get_cash(client):
+        """FIND .json DATA BY USER`s Name AND Surname"""
 
-                # MESSAGE FROM SERVER ABOUT STATUS OF OPERATION
-                server_message = get_from_server(client)
-                print(server_message)
+        name = input("Podaj imie: ")
+        surname = input("Podaj nazwisko: ")
+        balance_to_get = input("Kwota do wyplaty: ")
 
-            elif option == 'q':
-                print("\t\n Do widzenia!")
-                request_to_server(client, 'q')
-                run = False
+        # SEND DATA TO SERVER
+        user = {"Name": name, "Surname": surname, "BalanceToGet": balance_to_get}
+        data_to_changing = json.dumps(user)
 
-            else:
-                print("Wybierz jedna z opcji!")
-except ConnectionRefusedError:
-    print("SERVER ISN`T RESPONDING")
+        terminal.request_to_server(client, data_to_changing)
+
+    @staticmethod
+    @server_message
+    def transfer_cash_to_another_account(client):
+        ...
+
+    @staticmethod
+    @server_message
+    def stop_client(client):
+        terminal.request_to_server(client, 'q')
+
+        raise KilledSession
+
+
+if __name__ == "__main__":
+    Client = Client()
+    Client.start_client()

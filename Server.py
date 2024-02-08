@@ -1,5 +1,6 @@
 import socket
 import Terminal as terminal
+from Client import KilledSession
 
 
 class Server:
@@ -41,10 +42,14 @@ class Server:
                                 terminal.request_to_client(user, "Bad data")
                             except ValueError:
                                 terminal.request_to_client(user, "Bad data")
+                            except KilledSession:
+                                terminal.request_to_client(user, "Bye-bye!")
 
-    def stop_server(self, address):
-        print(f'USER with {address=} DISCONNECTED!')
-        raise Exception
+    @staticmethod
+    def stop_server(user):
+        print(f'USER with {user=} DISCONNECTED!')
+
+        raise KilledSession
 
 
 if __name__ == '__main__':
